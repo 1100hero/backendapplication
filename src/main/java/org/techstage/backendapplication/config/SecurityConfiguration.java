@@ -26,7 +26,6 @@ public class SecurityConfiguration {
         http
                 .authorizeHttpRequests((authz) -> {
                         authz
-                                .requestMatchers("/registration", "/login", "/logout", "/registration/check/**").permitAll()
                                 .anyRequest().authenticated();
                 })
                 .formLogin((form) ->
