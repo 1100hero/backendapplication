@@ -1,0 +1,19 @@
+server:
+  address: 51.254.36.232
+  port: 8085
+spring:
+  datasource:
+    username: appuser
+    password: Cavallo3003!
+    url: jdbc:postgresql://localhost:5432/backendapp
+  main:
+    allow-bean-definition-overriding: true
+    web-application-type: servlet
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
