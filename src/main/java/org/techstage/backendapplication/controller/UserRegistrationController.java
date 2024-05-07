@@ -12,6 +12,7 @@ import org.techstage.backendapplication.web.dto.UserRegistrationDTO;
 @RestController
 @RequestMapping("/registration")
 @AllArgsConstructor
+@CrossOrigin("*")
 public class UserRegistrationController {
 
     private UserService userService;

@@ -25,7 +25,8 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     public void login(UserLoginDTO loginDTO) {
-
+        passwordEncoder.encode(loginDTO.getPassword())
+                .equals(userRepository.findOneByEmailAndPassword(loginDTO.getEmail(), loginDTO.getPassword()));
     }
 
     @Override
