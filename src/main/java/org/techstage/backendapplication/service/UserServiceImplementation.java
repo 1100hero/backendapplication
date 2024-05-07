@@ -31,7 +31,7 @@ public class UserServiceImplementation implements UserService {
     @Override
     public void save(UserRegistrationDTO registrationDTO) {
         var user = new User(registrationDTO.getName(), registrationDTO.getSurname(), registrationDTO.getTelephone(),
-                registrationDTO.getEmail(), registrationDTO.getPassword(), List.of(new Role("ROLE_USER")));
+                registrationDTO.getEmail(), passwordEncoder.encode(registrationDTO.getPassword()), List.of(new Role("ROLE_USER")));
         userRepository.save(user);
     }
 }
