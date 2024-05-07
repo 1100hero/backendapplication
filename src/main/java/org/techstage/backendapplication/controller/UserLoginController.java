@@ -1,6 +1,8 @@
 package org.techstage.backendapplication.controller;
 
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.techstage.backendapplication.service.UserService;
@@ -15,7 +17,8 @@ public class UserLoginController {
     private UserService userService;
 
     @PostMapping
-    public void onLogin(@ModelAttribute("user") UserLoginDTO userLoginDTO) {
-
+    public ResponseEntity<?> onLogin(@ModelAttribute("user") UserLoginDTO userLoginDTO) {
+        userService.login(userLoginDTO);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

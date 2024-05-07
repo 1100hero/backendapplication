@@ -2,6 +2,10 @@ package org.techstage.backendapplication.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.techstage.backendapplication.domain.Role;
@@ -23,10 +27,15 @@ public class UserServiceImplementation implements UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
     @Override
     public void login(UserLoginDTO loginDTO) {
-        passwordEncoder.encode(loginDTO.getPassword())
-                .equals(userRepository.findOneByEmailAndPassword(loginDTO.getEmail(), loginDTO.getPassword()));
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                loginDTO.getEmail(), loginDTO.getPassword()));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     @Override
