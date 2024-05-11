@@ -1,4 +1,4 @@
-package org.techstage.backendapplication.domain;
+package org.techstage.backendapplication.model;
 
 import jakarta.persistence.*;
 import lombok.*;

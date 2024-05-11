@@ -35,9 +35,11 @@ public class UserLoginController {
 
     @PostMapping("/check")
     public ResponseEntity<Boolean> isPasswordExact(@ModelAttribute("user") UserLoginDTO userLoginDTO) {
-        var check = userRepository
-                .findOneByEmailAndPassword(userLoginDTO.getEmail(),
-                        encoder.encode(userLoginDTO.getPassword())).isEmpty();
-        return check ? ResponseEntity.ok(false) : ResponseEntity.ok(true);
+        if (userRepository.findOneByEmail(userLoginDTO.getEmail()).isEmpty())
+            return ResponseEntity.ok(false);
+
+        return encoder.matches(userLoginDTO.getPassword(),
+                userRepository.findOneByEmail(userLoginDTO.getEmail()).get().getPassword()) ?
+                ResponseEntity.ok(true) : ResponseEntity.ok(false);
     }
 }
