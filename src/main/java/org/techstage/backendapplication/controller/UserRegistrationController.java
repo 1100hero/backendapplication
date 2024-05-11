@@ -1,7 +1,10 @@
 package org.techstage.backendapplication.controller;
 
+import io.netty.handler.codec.http2.Http2Headers;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -21,9 +24,11 @@ public class UserRegistrationController {
     private UserRepository repository;
 
     @PostMapping
-    public String registerUserAccount(@ModelAttribute("user") UserRegistrationDTO userRegistrationDTO) {
+    public ResponseEntity<Void> registerUserAccount(@ModelAttribute("user") UserRegistrationDTO userRegistrationDTO) {
         userService.save(userRegistrationDTO);
-        return "redirect:/techstageit.com/index.html";
+        var headers = new HttpHeaders();
+        headers.add("Location", "http://51.254.36.232/techstageit.com/index.html?registration=success");
+        return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 
     @GetMapping("/check/mail-{email}")

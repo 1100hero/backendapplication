@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,11 +30,11 @@ public class UserServiceImplementation implements UserService {
     private AuthenticationManager authenticationManager;
 
     @Override
-    public void login(UserLoginDTO loginDTO) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+    public String login(UserLoginDTO loginDTO) {
+        var authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 loginDTO.getEmail(), loginDTO.getPassword()));
-
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        return "Token";
     }
 
     @Override
