@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.techstage.backendapplication.repository.UserRepository;
 import org.techstage.backendapplication.service.UserService;
@@ -20,6 +21,9 @@ public class UserLoginController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoder encoder;
+
     @PostMapping
     public ResponseEntity<Void> onLogin(@ModelAttribute("user") UserLoginDTO userLoginDTO) {
         var token = userService.login(userLoginDTO);
@@ -33,7 +37,7 @@ public class UserLoginController {
     public ResponseEntity<Boolean> isPasswordExact(@ModelAttribute("user") UserLoginDTO userLoginDTO) {
         var check = userRepository
                 .findOneByEmailAndPassword(userLoginDTO.getEmail(),
-                        userLoginDTO.getPassword()).isEmpty();
-        return check ? ResponseEntity.ok(true) : ResponseEntity.ok(false);
+                        encoder.encode(userLoginDTO.getPassword())).isEmpty();
+        return check ? ResponseEntity.ok(false) : ResponseEntity.ok(true);
     }
 }

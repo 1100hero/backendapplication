@@ -32,7 +32,7 @@ public class UserServiceImplementation implements UserService {
     @Override
     public String login(UserLoginDTO loginDTO) {
         var authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                loginDTO.getEmail(), loginDTO.getPassword()));
+                loginDTO.getEmail(), passwordEncoder.encode(loginDTO.getPassword())));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         return "Token";
     }
