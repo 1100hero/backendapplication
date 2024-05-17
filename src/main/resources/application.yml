@@ -1,9 +1,4 @@
 server:
-  ssl:
-    key-alias: spring-https
-    key-store: classpath:crypt.jks
-    key-store-type: JKS
-    key-store-password: Cavallo3003!
   address: 51.254.36.232
   port: 8085
 spring:
