@@ -26,11 +26,10 @@ public class AuthenticationController {
 
     @PostMapping("/registration")
     public ResponseEntity<Void> register(@ModelAttribute("user") User request) {
-        var token = authenticationService.register(request);
+        authenticationService.register(request);
         var headers = new HttpHeaders();
-        headers.add("Location", "http://51.254.36.232/techstageit.com/index.html?registration=success");
-        headers.add("Token", String.valueOf(token));
-        return new ResponseEntity<>(headers, HttpStatus.FOUND);
+        headers.add("Location", "http://techstageit.com/index.html?registration=success");
+        return new ResponseEntity<>(headers, HttpStatus.OK);
     }
 
     @GetMapping("/registration/check/mail-{email}")
@@ -44,8 +43,12 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> login(@RequestBody User request) {
-        return ResponseEntity.ok(authenticationService.login(request));
+    public ResponseEntity<Void> login(@RequestBody User request) {
+        var token = authenticationService.login(request);
+        var headers = new HttpHeaders();
+        headers.add("Location", "http://techstageit.com/index.html");
+        headers.add("token", token.getToken());
+        return new ResponseEntity<>(headers, HttpStatus.OK);
     }
 
     @PostMapping("/login/check")

@@ -1,16 +1,11 @@
 server:
-  ssl:
-    key-alias: spring-https
-    key-store: classpath:crypt.jks
-    key-store-type: JKS
-    key-store-password: Cavallo3003!
   address: 51.254.36.232
   port: 8085
 spring:
   datasource:
     username: appuser
     password: Cavallo3003!
-    url: jdbc:postgresql://localhost:5432/backendapp
+    url: jdbc:postgresql://localhost:5432/backendapp?useSSL=enable
   main:
     allow-bean-definition-overriding: true
     web-application-type: servlet

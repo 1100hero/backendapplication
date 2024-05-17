@@ -31,7 +31,7 @@ public class AuthenticationService {
         this.tokenRepository = tokenRepository;
     }
 
-    public AuthenticationResponse register(User request) {
+    public void register(User request) {
         var user = new User();
         user.setName(request.getName());
         user.setSurname(request.getSurname());
@@ -45,12 +45,7 @@ public class AuthenticationService {
 
         user.setRole(Role.USER);
 
-        user = userRepository.save(user);
-
-        var token = jwtService.generateToken(user);
-
-        saveUserToken(token, user);
-        return new AuthenticationResponse(token);
+        userRepository.save(user);
     }
 
     public AuthenticationResponse login(User request) {
