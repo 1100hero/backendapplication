@@ -10,12 +10,13 @@ import org.techstage.backendapplication.model.token.Token;
 import org.techstage.backendapplication.model.user.User;
 
 import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 @Transactional(readOnly = true)
 public interface TokenRepository extends JpaRepository<Token, Long> {
-
     Optional<Token> findByToken(String token);
 
     @Transactional
@@ -26,4 +27,15 @@ public interface TokenRepository extends JpaRepository<Token, Long> {
 
     @Query("SELECT t FROM Token t WHERE t.user.email = :email AND t.confirmedAt IS NOT NULL")
     Optional<Token> findTokenByUserEmailIfConfirmed(@Param("email") String email);
+
+    @Query("SELECT t.id FROM Token t WHERE t.token = ?1")
+    Optional<Long> findUserIdByToken(String token);
+
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM Token t WHERE t.expiresAt < :now")
+    void deleteByExpiredAtBefore(Date now);
+
+    @Query("SELECT DISTINCT t.user.id FROM Token t WHERE t.expiresAt < :now")
+    Optional<List<Long>> findUserIdsWithExpiredTokens(Date now);
 }

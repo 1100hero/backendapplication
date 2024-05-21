@@ -2,6 +2,21 @@ server:
   address: 51.254.36.232
   port: 8085
 spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: techstageit@gmail.com
+    password: "dbfn mbhq vkqy brfg"
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
   datasource:
     username: appuser
     password: Cavallo3003!

@@ -1,18 +1,26 @@
 package org.techstage.backendapplication.service.user;
 
 import io.jsonwebtoken.Claims;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.techstage.backendapplication.model.token.Token;
+import org.techstage.backendapplication.model.token.email.EmailSender;
 import org.techstage.backendapplication.model.user.Role;
 import org.techstage.backendapplication.model.user.User;
+import org.techstage.backendapplication.repository.TokenRepository;
 import org.techstage.backendapplication.repository.UserRepository;
+import org.techstage.backendapplication.service.token.EmailService;
 import org.techstage.backendapplication.service.token.JwtService;
 import org.techstage.backendapplication.service.token.TokenService;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 @Service
@@ -21,15 +29,18 @@ public class RegisterService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final TokenService tokenService;
-    //private final EmailSender emailSender;
+    private final EmailSender emailSender;
+    private final TokenRepository tokenRepository;
 
-    public RegisterService(PasswordEncoder passwordEncoder, UserRepository userRepository, TokenService tokenService) {
+    public RegisterService(PasswordEncoder passwordEncoder, UserRepository userRepository, TokenService tokenService, EmailSender emailSender, TokenRepository tokenRepository) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.tokenService = tokenService;
+        this.emailSender = emailSender;
+        this.tokenRepository = tokenRepository;
     }
 
-    public void register(User request) {
+    public int register(User request) {
         var user = new User();
         user.setName(request.getName());
         user.setSurname(request.getSurname());
@@ -43,6 +54,7 @@ public class RegisterService {
 
         user.setRole(Role.USER);
 
+        if (userRepository.countUsersByEmail(user.getEmail()) > 5) return 0;
         userRepository.save(user);
 
         var jwtService = new JwtService();
@@ -54,9 +66,9 @@ public class RegisterService {
                 user
         );
         tokenService.saveConfirmationToken(confirmationToken);
-        //emailSender.sendAccountConfirmation(request.getEmail(), token, request.getName());
-        var link = "http://localhost:8080/registration/confirm?token=" + token;
-        System.out.println(link);
+        var link = "http://51.254.36.232:8085/registration/confirm?token=" + token;
+        emailSender.send(user.getEmail(), EmailService.buildEmail(user.getName(), link));
+        return 1;
     }
 
     @Transactional
@@ -70,17 +82,34 @@ public class RegisterService {
 
         if (confirmationToken.get().getExpiresAt().before(new Date())) return HttpStatus.GONE;
 
+        var user = userRepository
+                .findUserById(
+                        tokenRepository.findUserIdByToken(
+                                        confirmationToken.get().getToken())
+                                .orElseThrow())
+                .orElseThrow();
+
+
         tokenService.setConfirmedAt(token);
-        var jwt = new JwtService();
         userRepository.updateConfirmedTokenById(
-                userRepository.findIdByUsername(jwt.extractUsername(
-                        confirmationToken.get().getToken())).get(),
+                user.getId().longValue(),
                 confirmationToken.get().getToken());
-
         userRepository.enableUser(confirmationToken.get().getUser().getEmail(), confirmationToken.get().getToken());
-
+        userRepository.deleteAllByEnabledFalse();
         return HttpStatus.OK;
     }
 
+    @Scheduled(fixedRate = 30 * 60 * 1000)
+    public void cleanExpiredToken() {
+        ZoneId zoneId = ZoneId.of("Europe/Rome");
+        var now = ZonedDateTime.now(zoneId);
+        var expiredAt = Date.from(now.toInstant());
 
+        var users = tokenRepository.findUserIdsWithExpiredTokens(expiredAt);
+        if (users.isEmpty()) return;
+
+        tokenRepository.deleteByExpiredAtBefore(expiredAt);
+
+        users.get().forEach(userRepository::deleteUserById);
+    }
 }

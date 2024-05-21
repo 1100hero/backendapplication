@@ -28,6 +28,15 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Modifying
     @Query("UPDATE User u SET u.confirmedToken = ?2 WHERE u.id = ?1")
     void updateConfirmedTokenById(Long id, String newToken);
-    @Query("SELECT u.id FROM User u WHERE u.username = ?1")
-    Optional<Long> findIdByUsername(String username);
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM User u WHERE u.enabled = false")
+    void deleteAllByEnabledFalse();
+    int countUsersByEmail(String email);
+    Optional<User> findUserById(Long id);
+
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM User u WHERE u.id = ?1")
+    void deleteUserById(Long id);
 }

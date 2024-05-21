@@ -11,6 +11,8 @@ import org.techstage.backendapplication.model.user.User;
 import javax.crypto.SecretKey;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -52,13 +54,14 @@ public class JwtService {
     }
 
     public String generateToken(User user) {
-        var now = LocalDateTime.now();
-        var zdtNow = now.atZone(ZoneId.systemDefault());
-        var issueDate = Date.from(zdtNow.toInstant());
+        ZoneId zoneId = ZoneId.of("Europe/Rome");
+        var now = ZonedDateTime.now(zoneId);
+
+        var issueDate = Date.from(now.toInstant());
 
         var expirationTime = now.plusMinutes(15);
-        var zdtExpiration = expirationTime.atZone(ZoneId.systemDefault());
-        var expirationDate = Date.from(zdtExpiration.toInstant());
+        var expirationDate = Date.from(expirationTime.toInstant());
+
         return Jwts
                 .builder()
                 .subject(user.getUsername())

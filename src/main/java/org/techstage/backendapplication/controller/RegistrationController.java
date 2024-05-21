@@ -22,15 +22,23 @@ public class RegistrationController {
 
     @PostMapping("/registration")
     public ResponseEntity<Void> register(@ModelAttribute("user") User request) {
-        registerService.register(request);
         var headers = new HttpHeaders();
-        headers.add("Location", "http://techstageit.com/index.html?registration=success");
-        return new ResponseEntity<>(headers, HttpStatus.OK);
+        if(registerService.register(request) == 1){
+            headers.add("Location", "http://techstageit.com/index.html?registration=success");
+            return ResponseEntity.status(HttpStatus.OK).headers(headers).build();
+        }
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).headers(headers).build();
     }
 
     @GetMapping(value = "/registration/confirm")
-    public ResponseEntity<HttpStatus> confirm(@RequestParam("token") String token) {
-        return new ResponseEntity<>(registerService.confirmToken(token));
+    public ResponseEntity<Void> confirm(@RequestParam("token") String token) {
+        var headers = new HttpHeaders();
+        var status = registerService.confirmToken(token);
+        if(status == HttpStatus.OK) {
+            headers.add("Location", "http://techstageit.com/index.html?verification=success");
+            return ResponseEntity.status(status).headers(headers).build();
+        }
+        return ResponseEntity.status(status).headers(headers).build();
     }
 
     @GetMapping("/registration/check/mail-{email}")

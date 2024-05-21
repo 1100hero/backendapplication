@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,6 +23,7 @@ import org.techstage.backendapplication.service.user.UserDetailsServiceImp;
 
 @Configuration
 @EnableWebSecurity
+@EnableScheduling
 public class SecurityConfiguration implements WebMvcConfigurer {
 
     private final UserDetailsServiceImp userDetailsServiceImp;
