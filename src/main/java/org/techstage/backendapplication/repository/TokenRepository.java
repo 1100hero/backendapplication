@@ -1,23 +1,29 @@
 package org.techstage.backendapplication.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.techstage.backendapplication.model.Token;
+import org.springframework.transaction.annotation.Transactional;
+import org.techstage.backendapplication.model.token.Token;
+import org.techstage.backendapplication.model.user.User;
 
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Repository
-public interface TokenRepository extends JpaRepository<Token, Integer> {
-
-    @Query("""
-            select t from Token t inner join User u on t.user.id = u.id
-            where t.user.id = :userId and t.loggedOut = false
-            """)
-    List<Token> findAllTokensByUser(Integer userId);
+@Transactional(readOnly = true)
+public interface TokenRepository extends JpaRepository<Token, Long> {
 
     Optional<Token> findByToken(String token);
 
-    void deleteByLoggedOutTrue();
+    @Transactional
+    @Modifying
+    @Query("UPDATE Token c SET c.confirmedAt = ?2 WHERE c.token = ?1")
+    void updateConfirmedAt(String token, LocalDateTime confirmedAt);
+
+
+    @Query("SELECT t FROM Token t WHERE t.user.email = :email AND t.confirmedAt IS NOT NULL")
+    Optional<Token> findTokenByUserEmailIfConfirmed(@Param("email") String email);
 }

@@ -11,7 +11,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -19,21 +18,18 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.techstage.backendapplication.filter.JwtAuthenticationFilter;
-import org.techstage.backendapplication.service.UserDetailsServiceImp;
+import org.techstage.backendapplication.service.user.UserDetailsServiceImp;
 
 @Configuration
 @EnableWebSecurity
-@Order(Ordered.LOWEST_PRECEDENCE)
 public class SecurityConfiguration implements WebMvcConfigurer {
 
     private final UserDetailsServiceImp userDetailsServiceImp;
     private final JwtAuthenticationFilter authenticationFilter;
-    private final CustomLogoutHandler logoutHandler;
 
-    public SecurityConfiguration(UserDetailsServiceImp userDetailsServiceImp, JwtAuthenticationFilter authenticationFilter, CustomLogoutHandler logoutHandler) {
+    public SecurityConfiguration(UserDetailsServiceImp userDetailsServiceImp, JwtAuthenticationFilter authenticationFilter) {
         this.userDetailsServiceImp = userDetailsServiceImp;
         this.authenticationFilter = authenticationFilter;
-        this.logoutHandler = logoutHandler;
     }
 
     @Bean
@@ -60,11 +56,6 @@ public class SecurityConfiguration implements WebMvcConfigurer {
                                         (request, response, accessDeniedException)->response.setStatus(403)
                                 )
                                 .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
-                .logout(l->l
-                        .logoutUrl("/logout")
-                        .addLogoutHandler(logoutHandler)
-                        .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext()
-                        ))
                 .build();
     }
 

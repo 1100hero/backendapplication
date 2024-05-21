@@ -4,16 +4,14 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.techstage.backendapplication.service.JwtService;
-import org.techstage.backendapplication.service.UserDetailsServiceImp;
+import org.techstage.backendapplication.service.token.JwtService;
+import org.techstage.backendapplication.service.user.UserDetailsServiceImp;
 
 import java.io.IOException;
 

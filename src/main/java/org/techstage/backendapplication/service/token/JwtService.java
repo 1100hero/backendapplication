@@ -1,4 +1,4 @@
-package org.techstage.backendapplication.service;
+package org.techstage.backendapplication.service.token;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -6,9 +6,11 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.techstage.backendapplication.model.User;
+import org.techstage.backendapplication.model.user.User;
 
 import javax.crypto.SecretKey;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -39,6 +41,7 @@ public class JwtService {
         return extractExpiration(token).before(new Date());
     }
 
+    // DA REVISIONARE
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
@@ -49,11 +52,18 @@ public class JwtService {
     }
 
     public String generateToken(User user) {
+        var now = LocalDateTime.now();
+        var zdtNow = now.atZone(ZoneId.systemDefault());
+        var issueDate = Date.from(zdtNow.toInstant());
+
+        var expirationTime = now.plusMinutes(15);
+        var zdtExpiration = expirationTime.atZone(ZoneId.systemDefault());
+        var expirationDate = Date.from(zdtExpiration.toInstant());
         return Jwts
                 .builder()
                 .subject(user.getUsername())
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000))
+                .issuedAt(issueDate)
+                .expiration(expirationDate)
                 .signWith(getSigninKey())
                 .compact();
     }

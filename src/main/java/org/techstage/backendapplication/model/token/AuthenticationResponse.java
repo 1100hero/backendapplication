@@ -1,4 +1,4 @@
-package org.techstage.backendapplication.model;
+package org.techstage.backendapplication.model.token;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

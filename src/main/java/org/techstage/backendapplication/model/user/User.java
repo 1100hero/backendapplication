@@ -1,4 +1,4 @@
-package org.techstage.backendapplication.model;
+package org.techstage.backendapplication.model.user;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -17,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @Setter
 @ToString
-@Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames = {"email", "telephone"}))
+@Table(name = "users")
 public class User implements UserDetails {
 
     @Id
@@ -29,12 +29,12 @@ public class User implements UserDetails {
     private String telephone;
     private String email;
     private String password;
+    private Boolean locked = false;
+    private Boolean enabled = false;
+    private String confirmedToken;
 
     @Enumerated(value = EnumType.STRING)
     private Role role;
-
-    @OneToMany(mappedBy = "user")
-    private List<Token> tokens;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -53,7 +53,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return !locked;
     }
 
     @Override
@@ -63,6 +63,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled;
     }
 }
