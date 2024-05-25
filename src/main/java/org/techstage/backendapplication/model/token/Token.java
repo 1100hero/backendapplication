@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.techstage.backendapplication.model.user.User;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 
 @Getter
@@ -25,7 +24,7 @@ public class Token {
             strategy = GenerationType.SEQUENCE,
             generator = "confirmation_token_sequence"
     )
-    private Long id;
+    private Integer id;
 
     @Column(nullable = false)
     private String token;

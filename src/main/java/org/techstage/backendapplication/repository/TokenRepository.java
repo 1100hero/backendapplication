@@ -16,7 +16,7 @@ import java.util.Optional;
 
 @Repository
 @Transactional(readOnly = true)
-public interface TokenRepository extends JpaRepository<Token, Long> {
+public interface TokenRepository extends JpaRepository<Token, Integer> {
     Optional<Token> findByToken(String token);
 
     @Transactional
@@ -24,18 +24,22 @@ public interface TokenRepository extends JpaRepository<Token, Long> {
     @Query("UPDATE Token c SET c.confirmedAt = ?2 WHERE c.token = ?1")
     void updateConfirmedAt(String token, LocalDateTime confirmedAt);
 
-
     @Query("SELECT t FROM Token t WHERE t.user.email = :email AND t.confirmedAt IS NOT NULL")
     Optional<Token> findTokenByUserEmailIfConfirmed(@Param("email") String email);
 
     @Query("SELECT t.id FROM Token t WHERE t.token = ?1")
-    Optional<Long> findUserIdByToken(String token);
+    Optional<Integer> findUserIdByToken(String token);
 
     @Transactional
     @Modifying
     @Query("DELETE FROM Token t WHERE t.expiresAt < :now")
     void deleteByExpiredAtBefore(Date now);
 
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM Token t WHERE t.user.id <> :id")
+    void deleteTokenExcept(@Param("id") Integer id);
+
     @Query("SELECT DISTINCT t.user.id FROM Token t WHERE t.expiresAt < :now")
-    Optional<List<Long>> findUserIdsWithExpiredTokens(Date now);
+    Optional<List<Integer>> findUserIdsWithExpiredTokens(Date now);
 }

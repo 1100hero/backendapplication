@@ -1,7 +1,6 @@
 package org.techstage.backendapplication.service.user;
 
 import io.jsonwebtoken.Claims;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,10 +16,8 @@ import org.techstage.backendapplication.service.token.EmailService;
 import org.techstage.backendapplication.service.token.JwtService;
 import org.techstage.backendapplication.service.token.TokenService;
 
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 @Service
@@ -73,31 +70,30 @@ public class RegisterService {
 
     @Transactional
     public HttpStatus confirmToken(String token) {
-        var confirmationToken = tokenService
-                .getToken(token);
+        var confirmationToken = tokenService.getToken(token);
 
         if (confirmationToken.isEmpty()) return HttpStatus.NOT_FOUND;
 
-        if (confirmationToken.get().getConfirmedAt() != null) return HttpStatus.CONFLICT;
+        var tokenEntity = confirmationToken.get();
+        if (tokenEntity.getConfirmedAt() != null) return HttpStatus.CONFLICT;
 
-        if (confirmationToken.get().getExpiresAt().before(new Date())) return HttpStatus.GONE;
+        if (tokenEntity.getExpiresAt().before(new Date())) return HttpStatus.GONE;
 
-        var user = userRepository
-                .findUserById(
-                        tokenRepository.findUserIdByToken(
-                                        confirmationToken.get().getToken())
-                                .orElseThrow())
-                .orElseThrow();
+        var userIdOpt = tokenRepository.findUserIdByToken(tokenEntity.getToken());
+        if (userIdOpt.isEmpty()) return HttpStatus.NOT_FOUND;
 
+        var user = userRepository.findUserById(userIdOpt.get()).orElseThrow();
 
         tokenService.setConfirmedAt(token);
-        userRepository.updateConfirmedTokenById(
-                user.getId().longValue(),
-                confirmationToken.get().getToken());
-        userRepository.enableUser(confirmationToken.get().getUser().getEmail(), confirmationToken.get().getToken());
+        userRepository.updateConfirmedTokenById(user.getId(), tokenEntity.getToken());
+        userRepository.enableUser(tokenEntity.getUser().getEmail(), tokenEntity.getToken());
+
+        tokenRepository.deleteTokenExcept(user.getId());
         userRepository.deleteAllByEnabledFalse();
+
         return HttpStatus.OK;
     }
+
 
     @Scheduled(fixedRate = 30 * 60 * 1000)
     public void cleanExpiredToken() {
@@ -109,7 +105,6 @@ public class RegisterService {
         if (users.isEmpty()) return;
 
         tokenRepository.deleteByExpiredAtBefore(expiredAt);
-
         users.get().forEach(userRepository::deleteUserById);
     }
 }
