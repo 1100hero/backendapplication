@@ -44,4 +44,4 @@ public class LoginController {
                 userRepository.findOneByEmail(user.getEmail()).get().getPassword()) ?
                 ResponseEntity.ok(true) : ResponseEntity.ok(false);
     }
-}
+}   

@@ -29,6 +29,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("UPDATE User u SET u.confirmedToken = ?2 WHERE u.id = ?1")
     void updateConfirmedTokenById(Integer id, String newToken);
 
+    Optional<User> findUserByName(@Param("userName") String name);
+
     @Transactional
     @Modifying
     @Query("DELETE FROM User u WHERE u.enabled = false")

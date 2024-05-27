@@ -30,7 +30,7 @@ public class RegistrationController {
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).headers(headers).build();
     }
 
-    @GetMapping(value = "/registration/confirm")
+    @GetMapping("/registration/confirm")
     public ResponseEntity<Void> confirm(@RequestParam("token") String token) {
         var headers = new HttpHeaders();
         var status = registerService.confirmToken(token);
