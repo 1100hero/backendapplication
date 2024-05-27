@@ -25,7 +25,7 @@ public class RegistrationController {
         var headers = new HttpHeaders();
         if(registerService.register(request) == 1){
             headers.add("Location", "http://techstageit.com/index.html?registration=success");
-            return ResponseEntity.status(HttpStatus.OK).headers(headers).build();
+            return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
         }
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).headers(headers).build();
     }
@@ -36,7 +36,7 @@ public class RegistrationController {
         var status = registerService.confirmToken(token);
         if(status == HttpStatus.OK) {
             headers.add("Location", "http://techstageit.com/index.html?verification=success");
-            return ResponseEntity.status(status).headers(headers).build();
+            return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
         }
         return ResponseEntity.status(status).headers(headers).build();
     }

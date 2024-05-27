@@ -30,9 +30,8 @@ public class LoginController {
     public ResponseEntity<Void> login(@RequestBody User request) {
         var token = loginService.login(request);
         var headers = new HttpHeaders();
-        headers.add("Location", "http://techstageit.com/index.html");
-        headers.add("token", token);
-        return new ResponseEntity<>(headers, HttpStatus.OK);
+        headers.add("Authorization", "Bearer " + token); // Solitamente si usa l'header Authorization per i token JWT
+        return new ResponseEntity<>(headers, HttpStatus.FOUND); // Usa HttpStatus.FOUND per il redirect
     }
 
     @PostMapping("/login/check")
@@ -44,4 +43,4 @@ public class LoginController {
                 userRepository.findOneByEmail(user.getEmail()).get().getPassword()) ?
                 ResponseEntity.ok(true) : ResponseEntity.ok(false);
     }
-}   
+}
