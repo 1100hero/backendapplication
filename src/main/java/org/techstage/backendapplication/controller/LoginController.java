@@ -30,17 +30,19 @@ public class LoginController {
     public ResponseEntity<Void> login(@RequestBody User request) {
         var token = loginService.login(request);
         var headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + token); // Solitamente si usa l'header Authorization per i token JWT
-        return new ResponseEntity<>(headers, HttpStatus.FOUND); // Usa HttpStatus.FOUND per il redirect
+        headers.add("Authorization", "Bearer " + token);
+        return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 
     @PostMapping("/login/check")
-    public ResponseEntity<Boolean> isPasswordExact(@RequestBody User user) {
+    public ResponseEntity<String> isPasswordExact(@RequestBody User user) {
         if (userRepository.findOneByEmail(user.getEmail()).isEmpty())
-            return ResponseEntity.ok(false);
+            return ResponseEntity.ok("REFUSED");
+        if(!userRepository.checkIfEnabled(user.getEmail()))
+            return ResponseEntity.ok("NOT_VERIFIED");
 
         return passwordEncoder.matches(user.getPassword(),
                 userRepository.findOneByEmail(user.getEmail()).get().getPassword()) ?
-                ResponseEntity.ok(true) : ResponseEntity.ok(false);
+                ResponseEntity.ok("ACCEPTED") : ResponseEntity.ok("REFUSED");
     }
 }

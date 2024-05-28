@@ -13,23 +13,37 @@ import java.util.Optional;
 @Repository
 @Transactional(readOnly = true)
 public interface UserRepository extends JpaRepository<User, Integer> {
+
     Optional<User> findByUsername(@Param("username") String username);
+
+    Optional<User> findUserByName(String name);
+
+    Optional<User> findUserBySurname(String surname);
+
+    Optional<User> findUserByTelephone(String telephone);
+
     Optional<User> findOneByEmail(@Param("email") String email);
+
     Optional<User> findByEmail(@Param("email") String email);
+
     @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM User u WHERE u.email = :email AND u.enabled = true")
     boolean checkIfEnabled(@Param("email") String email);
+
     boolean existsByEmail(@Param("email") String email);
+
     boolean existsByTelephone(@Param("telephone") String telephone);
+
     @Transactional
     @Modifying
     @Query("UPDATE User u SET u.enabled = TRUE WHERE u.email = ?1 AND u.confirmedToken = ?2")
     void enableUser(String email, String token);
+
     @Transactional
     @Modifying
     @Query("UPDATE User u SET u.confirmedToken = ?2 WHERE u.id = ?1")
     void updateConfirmedTokenById(Integer id, String newToken);
 
-    Optional<User> findUserByName(@Param("userName") String name);
+    Optional<User> findUserByConfirmedToken(String token);
 
     @Transactional
     @Modifying

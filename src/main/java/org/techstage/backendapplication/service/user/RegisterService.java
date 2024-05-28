@@ -64,7 +64,7 @@ public class RegisterService {
         );
         tokenService.saveConfirmationToken(confirmationToken);
         var link = "http://51.254.36.232:8085/registration/confirm?token=" + token;
-        emailSender.send(user.getEmail(), EmailService.buildEmail(user.getName(), link));
+        emailSender.send(user.getEmail(), EmailService.buildEmailVerification(user.getName(), link), "Conferma la tua email");
         return 1;
     }
 
