@@ -56,6 +56,26 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Transactional
     @Modifying
-    @Query("DELETE FROM User u WHERE u.id = ?1")
-    void deleteUserById(Integer id);
+    @Query("DELETE FROM User u WHERE u.id = :userId")
+    void deleteUserById(@Param("userId") Integer userId);
+
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM Token t WHERE t.user.id = :userId")
+    void deleteTokensByUserId(@Param("userId") Integer userId);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE User u SET u.name = :name WHERE u.id = :id")
+    void updateUserByName(@Param("id") Integer id, @Param("name") String name);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE User u SET u.surname = :surname WHERE u.id = :id")
+    void updateUserBySurname(@Param("id") Integer id, @Param("surname") String surname);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE User u SET u.telephone = :telephone WHERE u.id = :id")
+    void updateUserByTelephone(@Param("id") Integer id, @Param("telephone") String telephone);
 }

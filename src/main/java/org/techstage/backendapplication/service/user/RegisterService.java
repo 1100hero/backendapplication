@@ -2,6 +2,7 @@ package org.techstage.backendapplication.service.user;
 
 import io.jsonwebtoken.Claims;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -64,7 +65,9 @@ public class RegisterService {
         );
         tokenService.saveConfirmationToken(confirmationToken);
         var link = "http://51.254.36.232:8085/registration/confirm?token=" + token;
-        emailSender.send(user.getEmail(), EmailService.buildEmailVerification(user.getName(), link), "Conferma la tua email");
+        emailSender.send(user.getEmail(),
+                EmailService.buildEmailVerification(user.getName(), link),
+                "Conferma la tua email");
         return 1;
     }
 
@@ -94,17 +97,21 @@ public class RegisterService {
         return HttpStatus.OK;
     }
 
-
     @Scheduled(fixedRate = 30 * 60 * 1000)
     public void cleanExpiredToken() {
         ZoneId zoneId = ZoneId.of("Europe/Rome");
-        var now = ZonedDateTime.now(zoneId);
-        var expiredAt = Date.from(now.toInstant());
+        ZonedDateTime now = ZonedDateTime.now(zoneId);
+        Date expiredAt = Date.from(now.toInstant());
 
         var users = tokenRepository.findUserIdsWithExpiredTokens(expiredAt);
         if (users.isEmpty()) return;
 
-        tokenRepository.deleteByExpiredAtBefore(expiredAt);
+        users.get().forEach(userId -> {
+            tokenRepository.findTokensByUserIdAndConfirmedAtNull(userId)
+                    .forEach(token -> tokenRepository.deleteByExpiredAtBefore(expiredAt, token.getToken()));
+            userRepository.deleteTokensByUserId(userId);
+        });
+
         users.get().forEach(userRepository::deleteUserById);
     }
 }

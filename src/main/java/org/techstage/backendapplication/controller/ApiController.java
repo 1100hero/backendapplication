@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import org.techstage.backendapplication.model.token.TokenDTO;
 import org.techstage.backendapplication.model.token.email.EmailSender;
 import org.techstage.backendapplication.model.user.UpdateUserDTO;
+import org.techstage.backendapplication.repository.TokenRepository;
 import org.techstage.backendapplication.repository.UserRepository;
 import org.techstage.backendapplication.service.api.ApiService;
 import org.techstage.backendapplication.service.token.EmailService;
@@ -20,10 +21,12 @@ public class ApiController {
 
     private final UserRepository userRepository;
     private final ApiService apiService;
+    private final TokenRepository tokenRepository;
 
-    public ApiController(UserRepository userRepository, EmailSender emailSender, ApiService apiService) {
+    public ApiController(UserRepository userRepository, EmailSender emailSender, ApiService apiService, TokenRepository tokenRepository) {
         this.userRepository = userRepository;
         this.apiService = apiService;
+        this.tokenRepository = tokenRepository;
     }
 
     @PostMapping("/api/credentials")
@@ -40,12 +43,7 @@ public class ApiController {
 
     @PostMapping("/api/credentials/update")
     public ResponseEntity<Void> updateUserCredentials(@RequestBody UpdateUserDTO updateUserDTO) {
-        var user = userRepository.findUserByName(updateUserDTO.name());
-        var headers = new HttpHeaders();
-        headers.add("Location", "http://techstageit.com/account/index.html");
-        if (user.isEmpty())
-            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).headers(headers).build();
-        return null;
+        return apiService.update(updateUserDTO, 1);
     }
 
     @GetMapping("/api/credentials/check-name")
@@ -67,7 +65,7 @@ public class ApiController {
     @GetMapping("/api/credentials/check-telephone")
     public ResponseEntity<Boolean> checkCredentialsTelephone(@RequestParam("telephone") String telephone) {
         var user = userRepository.findUserByTelephone(telephone);
-        if(user.isEmpty())
+        if (user.isEmpty())
             return ResponseEntity.ok(false);
         return ResponseEntity.ok(true);
     }
@@ -75,5 +73,14 @@ public class ApiController {
     @PostMapping("/api/resetPassword")
     public void resetPassword(@RequestBody TokenDTO tokenDTO) {
         apiService.sendResetPswRequest(tokenDTO);
+    }
+
+    @GetMapping("/api/reset")
+    public ResponseEntity<Void> reset(@RequestParam("token") String token) {
+        var headers = new HttpHeaders();
+        if(tokenRepository.findUserIdByToken(token).isEmpty())
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).headers(headers).build();
+        headers.add("Location", "http://techstageit.com/account/index.html");
+        return ResponseEntity.status(HttpStatus.OK).headers(headers).build();
     }
 }

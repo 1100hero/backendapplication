@@ -28,7 +28,7 @@ public class EmailService implements EmailSender {
     }
 
     public static String buildEmailResetPsw(String name, String link) {
-        return "Sta fungia di minchiua";
+        return "PAG RESET";
     }
 
     public static String buildEmailVerification(String name, String link) {

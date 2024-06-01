@@ -7,7 +7,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.techstage.backendapplication.model.token.Token;
-import org.techstage.backendapplication.model.user.User;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -30,10 +29,12 @@ public interface TokenRepository extends JpaRepository<Token, Integer> {
     @Query("SELECT t.id FROM Token t WHERE t.token = ?1")
     Optional<Integer> findUserIdByToken(String token);
 
+    List<Token> findTokensByUserIdAndConfirmedAtNull(Integer userId);
+
     @Transactional
     @Modifying
-    @Query("DELETE FROM Token t WHERE t.expiresAt < :now")
-    void deleteByExpiredAtBefore(Date now);
+    @Query("DELETE FROM Token t WHERE t.expiresAt < :now AND t.token = :token")
+    void deleteByExpiredAtBefore(Date now, String token);
 
     @Transactional
     @Modifying
@@ -42,4 +43,5 @@ public interface TokenRepository extends JpaRepository<Token, Integer> {
 
     @Query("SELECT DISTINCT t.user.id FROM Token t WHERE t.expiresAt < :now")
     Optional<List<Integer>> findUserIdsWithExpiredTokens(Date now);
+
 }
