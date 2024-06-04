@@ -43,7 +43,6 @@ public class JwtService {
         return extractExpiration(token).before(new Date());
     }
 
-    // DA REVISIONARE
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }

@@ -3,14 +3,15 @@ package org.techstage.backendapplication.controller;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.techstage.backendapplication.model.token.TokenDTO;
+import org.techstage.backendapplication.model.dto.ResetPswDTO;
+import org.techstage.backendapplication.model.dto.TokenDTO;
 import org.techstage.backendapplication.model.token.email.EmailSender;
-import org.techstage.backendapplication.model.user.UpdateUserDTO;
+import org.techstage.backendapplication.model.dto.UpdateUserDTO;
 import org.techstage.backendapplication.repository.TokenRepository;
 import org.techstage.backendapplication.repository.UserRepository;
 import org.techstage.backendapplication.service.api.ApiService;
-import org.techstage.backendapplication.service.token.EmailService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,11 +23,13 @@ public class ApiController {
     private final UserRepository userRepository;
     private final ApiService apiService;
     private final TokenRepository tokenRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public ApiController(UserRepository userRepository, EmailSender emailSender, ApiService apiService, TokenRepository tokenRepository) {
+    public ApiController(UserRepository userRepository, EmailSender emailSender, ApiService apiService, TokenRepository tokenRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.apiService = apiService;
         this.tokenRepository = tokenRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/api/credentials")
@@ -43,7 +46,16 @@ public class ApiController {
 
     @PostMapping("/api/credentials/update")
     public ResponseEntity<Void> updateUserCredentials(@RequestBody UpdateUserDTO updateUserDTO) {
-        return apiService.update(updateUserDTO, 1);
+        var id = userRepository.findUserIdByToken(updateUserDTO.token());
+        var headers = new HttpHeaders();
+        if (id.isEmpty()) {
+            headers.add("Location", "http://techstageit.com/index.html?update=failed");
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).headers(headers).build();
+        }
+        headers.add("Location",
+                "http://techstageit.com/index.html?update=success");
+        apiService.update(updateUserDTO, id.get());
+        return ResponseEntity.status(HttpStatus.OK).headers(headers).build();
     }
 
     @GetMapping("/api/credentials/check-name")
@@ -76,11 +88,27 @@ public class ApiController {
     }
 
     @GetMapping("/api/reset")
-    public ResponseEntity<Void> reset(@RequestParam("token") String token) {
+    public ResponseEntity<Void> reset(@RequestParam("email") String email) {
         var headers = new HttpHeaders();
-        if(tokenRepository.findUserIdByToken(token).isEmpty())
-            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).headers(headers).build();
-        headers.add("Location", "http://techstageit.com/account/index.html");
+        headers.add("Location", "http://techstageit.com/reset-password/index.html?email="+email);
+        return ResponseEntity.status(HttpStatus.OK).headers(headers).build();
+    }
+
+    @PostMapping("/api/check-password")
+    public ResponseEntity<Boolean> checkPass(@RequestBody ResetPswDTO dto) {
+        var user = userRepository.findUserByEmail(dto.email());
+        return user
+                .filter(value -> !passwordEncoder
+                        .matches(dto.psw(), value.getPassword()))
+                .map(value -> ResponseEntity.ok(true))
+                .orElseGet(() -> ResponseEntity.ok(false));
+    }
+
+    @PostMapping("/api/update-password")
+    public ResponseEntity<Void> updatePass(@RequestBody ResetPswDTO dto) {
+        var headers = new HttpHeaders();
+        headers.add("Location", "http://techstageit.com/index.html?updatePsw=success");
+        userRepository.updateUserPasswordByEmail(dto.email(), passwordEncoder.encode(dto.psw()));
         return ResponseEntity.status(HttpStatus.OK).headers(headers).build();
     }
 }

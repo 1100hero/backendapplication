@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.techstage.backendapplication.model.token.Token;
 import org.techstage.backendapplication.model.user.User;
 
 import java.util.Optional;
@@ -32,6 +33,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByEmail(@Param("email") String email);
 
     boolean existsByTelephone(@Param("telephone") String telephone);
+
+    Optional<User> findUserByEmail(String email);
 
     @Transactional
     @Modifying
@@ -69,6 +72,9 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("UPDATE User u SET u.name = :name WHERE u.id = :id")
     void updateUserByName(@Param("id") Integer id, @Param("name") String name);
 
+    @Query("SELECT u.id FROM User u WHERE u.confirmedToken = :token")
+    Optional<Integer> findUserIdByToken(@Param("token") String token);
+
     @Transactional
     @Modifying
     @Query("UPDATE User u SET u.surname = :surname WHERE u.id = :id")
@@ -78,4 +84,9 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Modifying
     @Query("UPDATE User u SET u.telephone = :telephone WHERE u.id = :id")
     void updateUserByTelephone(@Param("id") Integer id, @Param("telephone") String telephone);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE User u SET u.password = :password WHERE u.email = :email")
+    void updateUserPasswordByEmail(@Param("email") String email, @Param("password") String password);
 }
