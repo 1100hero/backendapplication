@@ -1,7 +1,9 @@
 package org.techstage.backendapplication.service.user;
 
 import io.jsonwebtoken.Claims;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,7 +39,7 @@ public class RegisterService {
         this.tokenRepository = tokenRepository;
     }
 
-    public int register(User request) {
+    protected int register(User request) {
         var user = new User();
         user.setName(request.getName());
         user.setSurname(request.getSurname());
@@ -71,7 +73,7 @@ public class RegisterService {
     }
 
     @Transactional
-    public HttpStatus confirmToken(String token) {
+    public HttpStatus preConfirmToken(String token) {
         var confirmationToken = tokenService.getToken(token);
 
         if (confirmationToken.isEmpty()) return HttpStatus.NOT_FOUND;
@@ -102,15 +104,21 @@ public class RegisterService {
         ZonedDateTime now = ZonedDateTime.now(zoneId);
         Date expiredAt = Date.from(now.toInstant());
 
-        var users = tokenRepository.findUserIdsWithExpiredTokens(expiredAt);
-        if (users.isEmpty()) return;
+        var userIds = tokenRepository.findUserIdsWithExpiredTokens(expiredAt);
+        if (userIds.isEmpty()) return;
 
-        users.get().forEach(userId -> {
-            tokenRepository.findTokensByUserIdAndConfirmedAtNull(userId)
-                    .forEach(token -> tokenRepository.deleteByExpiredAtBefore(expiredAt, token.getToken()));
-            userRepository.deleteTokensByUserId(userId);
-        });
+        for (Integer id : userIds.get()) {
+            tokenRepository.deleteTokenByUserId(id);
+            userRepository.deleteById(id);
+        }
+    }
 
-        users.get().forEach(userRepository::deleteUserById);
+    public ResponseEntity<Void> registerUser(User request) {
+        var headers = new HttpHeaders();
+        if (register(request) == 1) {
+            headers.add("Location", "http://techstageit.com/index.html?registration=success");
+            return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
+        }
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).headers(headers).build();
     }
 }

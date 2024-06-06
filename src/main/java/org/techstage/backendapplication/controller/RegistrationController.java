@@ -23,18 +23,13 @@ public class RegistrationController {
 
     @PostMapping
     public ResponseEntity<Void> register(@ModelAttribute("user") User request) {
-        var headers = new HttpHeaders();
-        if (registerService.register(request) == 1) {
-            headers.add("Location", "http://techstageit.com/index.html?registration=success");
-            return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
-        }
-        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).headers(headers).build();
+        return registerService.registerUser(request);
     }
 
     @GetMapping("/confirm")
     public ResponseEntity<Void> confirm(@RequestParam("token") String token) {
         var headers = new HttpHeaders();
-        var status = registerService.confirmToken(token);
+        var status = registerService.preConfirmToken(token);
         if (status == HttpStatus.OK) {
             headers.add("Location", "http://techstageit.com/index.html?verification=success");
             return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
