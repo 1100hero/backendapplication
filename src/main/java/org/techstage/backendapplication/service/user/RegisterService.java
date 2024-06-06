@@ -2,7 +2,6 @@ package org.techstage.backendapplication.service.user;
 
 import io.jsonwebtoken.Claims;
 import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

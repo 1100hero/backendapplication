@@ -4,12 +4,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import org.techstage.backendapplication.model.token.Token;
 import org.techstage.backendapplication.model.user.User;
 
-import javax.swing.text.html.Option;
 import java.util.Optional;
 
 @Repository
@@ -35,11 +34,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     boolean existsByTelephone(@Param("telephone") String telephone);
 
-    Optional<User> findUserByEmail(String email);
-
-    @Query("SELECT u.id FROM User u WHERE u.email = :email")
-    Optional<Integer> findUserIdByEmail(@Param("email") String email);
-
     @Transactional
     @Modifying
     @Query("UPDATE User u SET u.enabled = TRUE WHERE u.email = ?1 AND u.confirmedToken = ?2")
@@ -60,6 +54,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     int countUsersByEmail(String email);
 
     Optional<User> findUserById(Integer id);
+
+    Optional<User> findUserByEmail(String email);
 
     @Transactional
     @Modifying
@@ -82,15 +78,18 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Transactional
     @Modifying
     @Query("UPDATE User u SET u.surname = :surname WHERE u.id = :id")
+    @Async
     void updateUserBySurname(@Param("id") Integer id, @Param("surname") String surname);
 
     @Transactional
     @Modifying
     @Query("UPDATE User u SET u.telephone = :telephone WHERE u.id = :id")
+    @Async
     void updateUserByTelephone(@Param("id") Integer id, @Param("telephone") String telephone);
 
     @Transactional
     @Modifying
-    @Query("UPDATE User u SET u.password = :password WHERE u.email = :email")
-    void updateUserPasswordByEmail(@Param("email") String email, @Param("password") String password);
+    @Query("UPDATE User u SET u.password = :password WHERE u.confirmedToken = :token")
+    @Async
+    void updateUserPasswordByConfirmedToken(@Param("token") String token, @Param("password") String password);
 }

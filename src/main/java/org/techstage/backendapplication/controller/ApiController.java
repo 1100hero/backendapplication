@@ -8,112 +8,80 @@ import org.springframework.web.bind.annotation.*;
 import org.techstage.backendapplication.model.dto.EmailDTO;
 import org.techstage.backendapplication.model.dto.ResetPswDTO;
 import org.techstage.backendapplication.model.dto.TokenDTO;
-import org.techstage.backendapplication.model.token.email.EmailSender;
 import org.techstage.backendapplication.model.dto.UpdateUserDTO;
-import org.techstage.backendapplication.repository.TokenRepository;
 import org.techstage.backendapplication.repository.UserRepository;
 import org.techstage.backendapplication.service.api.ApiService;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @CrossOrigin("*")
+@RequestMapping("/api")
 public class ApiController {
 
     private final UserRepository userRepository;
     private final ApiService apiService;
-    private final TokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public ApiController(UserRepository userRepository, EmailSender emailSender, ApiService apiService, TokenRepository tokenRepository, PasswordEncoder passwordEncoder) {
+    public ApiController(UserRepository userRepository, ApiService apiService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.apiService = apiService;
-        this.tokenRepository = tokenRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    @PostMapping("/api/credentials")
+    @PostMapping("/credentials")
     public Map<?, ?> getUserCredentials(@RequestBody TokenDTO token) {
-        var user = userRepository.findUserByConfirmedToken(token.token());
-        if (user.isEmpty()) return null;
-        var map = new HashMap<>();
-        map.put("Name", user.get().getName());
-        map.put("Surname", user.get().getSurname());
-        map.put("Email", user.get().getEmail());
-        map.put("Telephone", user.get().getTelephone());
-        return map;
+        return apiService.getCredentialsByToken(token.token());
     }
 
-    @PostMapping("/api/credentials/update")
+    @PostMapping("/credentials/update")
     public ResponseEntity<Void> updateUserCredentials(@RequestBody UpdateUserDTO updateUserDTO) {
-        var id = userRepository.findUserIdByToken(updateUserDTO.token());
-        var headers = new HttpHeaders();
-        if (id.isEmpty()) {
-            headers.add("Location", "http://techstageit.com/index.html?update=failed");
-            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).headers(headers).build();
-        }
-        headers.add("Location",
-                "http://techstageit.com/index.html?update=success");
-        apiService.update(updateUserDTO, id.get());
-        return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
+        return apiService.updateCredentials(updateUserDTO);
     }
 
-    @GetMapping("/api/credentials/check-name")
+    @GetMapping("/credentials/check-name")
     public ResponseEntity<Boolean> checkCredentialsName(@RequestParam("name") String name) {
-        var user = userRepository.findUserByName(name);
-        if (user.isEmpty())
-            return ResponseEntity.ok(false);
-        return ResponseEntity.ok(true);
+        return apiService.checkCredential(name, userRepository::findUserByName);
     }
 
-    @GetMapping("/api/credentials/check-surname")
+    @GetMapping("/credentials/check-surname")
     public ResponseEntity<Boolean> checkCredentialsSurname(@RequestParam("surname") String surname) {
-        var user = userRepository.findUserBySurname(surname);
-        if (user.isEmpty())
-            return ResponseEntity.ok(false);
-        return ResponseEntity.ok(true);
+        return apiService.checkCredential(surname, userRepository::findUserBySurname);
     }
 
-    @GetMapping("/api/credentials/check-telephone")
+    @GetMapping("/credentials/check-telephone")
     public ResponseEntity<Boolean> checkCredentialsTelephone(@RequestParam("telephone") String telephone) {
-        var user = userRepository.findUserByTelephone(telephone);
-        if (user.isEmpty())
-            return ResponseEntity.ok(false);
-        return ResponseEntity.ok(true);
+        return apiService.checkCredential(telephone, userRepository::findUserByTelephone);
     }
 
-    @PostMapping("/api/resetPassword")
+    @PostMapping("/resetPassword")
     public void resetPassword(@RequestBody TokenDTO token) {
         apiService.sendResetPswRequest(token);
     }
 
-    @PostMapping("/api/resetForgottenPassword")
-    public void resetForgottenPsw(@RequestParam("email") String email) {
-        apiService.sendResetPswForgotRequest(email);
+    @PostMapping("/resetForgottenPassword")
+    public void resetForgottenPsw(@RequestBody EmailDTO dto) {
+        apiService.sendResetPswForgotRequest(dto.email());
     }
 
-    @GetMapping("/api/reset")
-    public ResponseEntity<Void> reset(@RequestParam("email") String email) {
+    @PostMapping("/check-password")
+    public ResponseEntity<Boolean> checkPass(@RequestBody ResetPswDTO dto) {
+        return apiService.checkPassword(dto);
+    }
+
+    @GetMapping("/reset")
+    public ResponseEntity<Void> reset(@RequestParam("token") String token) {
         var headers = new HttpHeaders();
-        headers.add("Location", "http://techstageit.com/reset-password/index.html?email="+email);
+        headers.add("Location", "http://techstageit.com/reset-password/index.html?token="+token);
         return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
     }
 
-    @PostMapping("/api/check-password")
-    public ResponseEntity<Boolean> checkPass(@RequestBody ResetPswDTO dto) {
-        var user = userRepository.findUserByEmail(dto.email());
-        return user
-                .filter(value -> !passwordEncoder
-                        .matches(dto.psw(), value.getPassword()))
-                .map(value -> ResponseEntity.ok(true))
-                .orElseGet(() -> ResponseEntity.ok(false));
-    }
-
-    @PostMapping("/api/update-password")
+    @PostMapping("/update-password")
     public ResponseEntity<Void> updatePass(@RequestBody ResetPswDTO dto) {
         var headers = new HttpHeaders();
-        userRepository.updateUserPasswordByEmail(dto.email(), passwordEncoder.encode(dto.psw()));
+        if(userRepository.findUserByConfirmedToken(dto.token()).isEmpty())
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).headers(headers).build();
+        userRepository.updateUserPasswordByConfirmedToken(dto.token(), passwordEncoder.encode(dto.psw()));
         return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
     }
 }
