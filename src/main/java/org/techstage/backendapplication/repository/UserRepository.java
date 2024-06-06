@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.techstage.backendapplication.model.token.Token;
 import org.techstage.backendapplication.model.user.User;
 
+import javax.swing.text.html.Option;
 import java.util.Optional;
 
 @Repository
@@ -35,6 +36,9 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByTelephone(@Param("telephone") String telephone);
 
     Optional<User> findUserByEmail(String email);
+
+    @Query("SELECT u.id FROM User u WHERE u.email = :email")
+    Optional<Integer> findUserIdByEmail(@Param("email") String email);
 
     @Transactional
     @Modifying

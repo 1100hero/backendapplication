@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.techstage.backendapplication.model.dto.EmailDTO;
 import org.techstage.backendapplication.model.dto.ResetPswDTO;
 import org.techstage.backendapplication.model.dto.TokenDTO;
 import org.techstage.backendapplication.model.token.email.EmailSender;
@@ -55,7 +56,7 @@ public class ApiController {
         headers.add("Location",
                 "http://techstageit.com/index.html?update=success");
         apiService.update(updateUserDTO, id.get());
-        return ResponseEntity.status(HttpStatus.OK).headers(headers).build();
+        return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
     }
 
     @GetMapping("/api/credentials/check-name")
@@ -83,15 +84,20 @@ public class ApiController {
     }
 
     @PostMapping("/api/resetPassword")
-    public void resetPassword(@RequestBody TokenDTO tokenDTO) {
-        apiService.sendResetPswRequest(tokenDTO);
+    public void resetPassword(@RequestBody TokenDTO token) {
+        apiService.sendResetPswRequest(token);
+    }
+
+    @PostMapping("/api/resetForgottenPassword")
+    public void resetForgottenPsw(@RequestParam("email") String email) {
+        apiService.sendResetPswForgotRequest(email);
     }
 
     @GetMapping("/api/reset")
     public ResponseEntity<Void> reset(@RequestParam("email") String email) {
         var headers = new HttpHeaders();
         headers.add("Location", "http://techstageit.com/reset-password/index.html?email="+email);
-        return ResponseEntity.status(HttpStatus.OK).headers(headers).build();
+        return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
     }
 
     @PostMapping("/api/check-password")
@@ -107,8 +113,7 @@ public class ApiController {
     @PostMapping("/api/update-password")
     public ResponseEntity<Void> updatePass(@RequestBody ResetPswDTO dto) {
         var headers = new HttpHeaders();
-        headers.add("Location", "http://techstageit.com/index.html?updatePsw=success");
         userRepository.updateUserPasswordByEmail(dto.email(), passwordEncoder.encode(dto.psw()));
-        return ResponseEntity.status(HttpStatus.OK).headers(headers).build();
+        return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
     }
 }

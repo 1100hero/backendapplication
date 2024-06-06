@@ -35,10 +35,10 @@ public class EmailService implements EmailSender {
                 "                </div>\n" +
                 "                <div class=\"content\" style=\"padding: 20px; background-color: #111;\">\n" +
                 "                    <img src=\"http://techstageit.com/image/logo.png\" style=\"max-width: 100%; height: 60px;\">\n" +
-                "                    <p style=\"font-size: 18px; line-height: 1.5;color:white;\">Ciao \" + name + \",</p>\n" +
+                "                    <p style=\"font-size: 18px; line-height: 1.5;color:white;\">Ciao "  +name + ",</p>\n" +
                 "                    <p style=\"font-size: 18px; line-height: 1.5;color:white;\">Hai dimenticato la password?</p>\n" +
                 "                    <p style=\"font-size: 18px; line-height: 1.5;color:white;\">Usa il pulsante qui sotto per modificare la password del tuo account Blackmoon.</p>\n" +
-                "                    <a href=\"\" style=\"display: inline-block; margin-top: 20px; padding: 15px 30px; font-size: 18px; color: #fff; background-color: #a6003d; text-decoration: none; border-radius: 5px; text-transform: uppercase;\">Modifica password</a>\n" +
+                "                    <a href=\""+ link +"\" style=\"display: inline-block; margin-top: 20px; padding: 15px 30px; font-size: 18px; color: #fff; background-color: #a6003d; text-decoration: none; border-radius: 5px; text-transform: uppercase;\">Modifica password</a>\n" +
                 "                </div>\n" +
                 "                <div class=\"footer\" style=\"margin-top: 20px; font-size: 14px; color: #666;\">\n" +
                 "                    <p>Se non hai richiesto questa email, puoi ignorarla.</p>\n" +
@@ -57,9 +57,9 @@ public class EmailService implements EmailSender {
                 "            </div>\n" +
                 "            <div class=\"content\" style=\"padding: 20px; background-color: #111;\">\n" +
                 "                <img src=\"http://techstageit.com/image/logo.png\" style=\"max-width: 100%; height: 60px;\">\n" +
-                "                <p style=\"font-size: 18px; line-height: 1.5;\">Ciao " + name + ",</p>\n" +
-                "                <p style=\"font-size: 18px; line-height: 1.5;\">Grazie per esserti registrato. Sei a un passo dall'entrare a far parte del Blackmoon!</p>\n" +
-                "                <p style=\"font-size: 18px; line-height: 1.5;\">Clicca sul pulsante qui sotto per confermare il tuo account e iniziare subito a scoprire eventi imperdibili, divertimento e tanto altro.</p>\n" +
+                "                <p style=\"font-size: 18px; line-height: 1.5;color:white;\">Ciao " + name + ",</p>\n" +
+                "                <p style=\"font-size: 18px; line-height: 1.5;color:white;\">Grazie per esserti registrato. Sei a un passo dall'entrare a far parte del Blackmoon!</p>\n" +
+                "                <p style=\"font-size: 18px; line-height: 1.5;color:white;\">Clicca sul pulsante qui sotto per confermare il tuo account e iniziare subito a scoprire eventi imperdibili, divertimento e tanto altro.</p>\n" +
                 "                <a href=\"" + link + "\" style=\"display: inline-block; margin-top: 20px; padding: 15px 30px; font-size: 18px; color: #fff; background-color: #a6003d; text-decoration: none; border-radius: 5px; text-transform: uppercase;\">Conferma il tuo Account</a>\n" +
                 "            </div>\n" +
                 "            <div class=\"footer\" style=\"margin-top: 20px; font-size: 14px; color: #666;\">\n" +
